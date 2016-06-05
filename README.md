@@ -8,6 +8,7 @@ git clone git@github.com:zmaril/huh.git
 cd huh
 vagrant up
 vagrant ssh
+cd /vagrant
 ./huh ls
 #raw_trace
 ```
