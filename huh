@@ -39,5 +39,7 @@ k_tmpfile=$(mktemp /tmp/huh.k.XXXXXX)
 strace -f -F -i -q -v -tt -T -o $strace_tmpfile "$@"
 cat << EOF > $k_tmpfile
 raw_trace: 0: \`"$strace_tmpfile";
+headers: \`pid\`start_time\`run_time\`pc\`call\`args\`ret;
+parsed_trace: raw_trace;
 EOF
 rlwrap k $k_tmpfile
