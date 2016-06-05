@@ -13,5 +13,6 @@ Vagrant.configure(2) do |config|
     git clone https://github.com/kevinlawler/kona.git
     cd kona
     make
+    sudo make install 
   SHELL
 end

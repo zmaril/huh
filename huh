@@ -31,7 +31,11 @@ set -e
 # -E var=val -- put var=val in the environment for command
 # -E var -- remove var from the environment for command
 
-tmpfile=$(mktemp /tmp/huh.XXXXXX)
-echo $tmpfile
-strace -f -F -i -q -v -tt -T -o $tmpfile "$@"
-go k go  
+set -x
+strace_tmpfile=$(mktemp /tmp/huh.strace.XXXXXX)
+k_tmpfile=$(mktemp /tmp/huh.k.XXXXXX)
+echo $strace_tmpfile
+echo $k_tmpfile
+strace -f -F -i -q -v -tt -T -o $strace_tmpfile "$@"
+echo "raw_trace: 0: \`\"$strace_tmpfile\"" > $k_tmpfile
+k $k_tmpfile
