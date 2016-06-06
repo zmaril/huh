@@ -31,7 +31,6 @@ set -e
 # -E var=val -- put var=val in the environment for command
 # -E var -- remove var from the environment for command
 
-#set -x
 strace_tmpfile=$(mktemp /tmp/huh.strace.XXXXXX)
 k_tmpfile=$(mktemp /tmp/huh.k.XXXXXX)
 #echo $strace_tmpfile
@@ -40,6 +39,32 @@ strace -f -F -i -q -v -tt -T -o $strace_tmpfile "$@"
 cat << EOF > $k_tmpfile
 raw_trace: 0: \`"$strace_tmpfile";
 headers: \`pid\`start_time\`run_time\`pc\`call\`args\`ret;
+
+pids: 0\$raw_trace@'!:'raw_trace?'" ";
+rest:  ((raw_trace?'" ") + 2) _' (raw_trace);
+
+start_times: rest@'!:'rest?'" ";
+rest:  ((rest?'" ") + 2) _' (rest);
+
+pcs: rest@'!:'rest?'"]";
+rest:  ((rest?'"]") + 2) _' (rest);
+
+calls: rest@'!:'rest?'"(";
+rest:  ((rest?'"(") + 1) _' (rest);
+
+rest: |:'rest; 
+
+runtimes:  |:'1_'rest@'!:'rest?'"<";
+rest:  ((rest?'"<") + 1) _' (rest);
+
+rets: 1_'|:'1_'rest@'!:'rest?'"=";
+rest:  ((rest?'"=") + 1) _' (rest);
+
+args:|:'2_'rest;
+
+trace: headers!(pids;start_times;runtimes;pcs;calls;args;rets);
+
 parsed_trace: raw_trace;
 EOF
 rlwrap k $k_tmpfile
+
