@@ -1,70 +1,12 @@
 #!/bin/bash
 set -e
 
-#
-# act like i'm going to fucking remember what any of these cmdline options mean 
-#
-# usage: strace [-dffhiqrtttTvVxx] [-a column] [-e expr] ... [-o file]
-#               [-p pid] ... [-s strsize] [-u username] [-E var=val] ...
-#               [command [arg ...]]
-#    or: strace -c -D [-e expr] ... [-O overhead] [-S sortby] [-E var=val] ...
-#               [command [arg ...]]
-# -c -- count time, calls, and errors for each syscall and report summary
-# -f -- follow forks, -ff -- with output into separate files
-# -F -- attempt to follow vforks, -h -- print help message
-# -i -- print instruction pointer at time of syscall
-# -q -- suppress messages about attaching, detaching, etc.
-# -r -- print relative timestamp, -t -- absolute timestamp, -tt -- with usecs
-# -T -- print time spent in each syscall, -V -- print version
-# -v -- verbose mode: print unabbreviated argv, stat, termio[s], etc. args
-# -x -- print non-ascii strings in hex, -xx -- print all strings in hex
-# -a column -- alignment COLUMN for printing syscall results (default 40)
-# -e expr -- a qualifying expression: option=[!]all or option=[!]val1[,val2]...
-#    options: trace, abbrev, verbose, raw, signal, read, or write
-# -o file -- send trace output to FILE instead of stderr
-# -O overhead -- set overhead for tracing syscalls to OVERHEAD usecs
-# -p pid -- trace process with process id PID, may be repeated
-# -D -- run tracer process as a detached grandchild, not as parent
-# -s strsize -- limit length of print strings to STRSIZE chars (default 32)
-# -S sortby -- sort syscall counts by: time, calls, name, nothing (default time)
-# -u username -- run command as username handling setuid and/or setgid
-# -E var=val -- put var=val in the environment for command
-# -E var -- remove var from the environment for command
+#TODO: compile strace with lib-unwind for stack traces at each system call
 
 strace_tmpfile=$(mktemp /tmp/huh.strace.XXXXXX)
-k_tmpfile=$(mktemp /tmp/huh.k.XXXXXX)
-#echo $strace_tmpfile
-#echo $k_tmpfile
-strace -f -F -i -q -v -tt -T -o $strace_tmpfile "$@"
-cat << EOF > $k_tmpfile
-raw_trace: 0: \`"$strace_tmpfile";
-headers: \`pid\`start_time\`run_time\`pc\`call\`args\`ret;
+echo $strace_tmpfile
+#echo $db_tmpfile
+strace -x -y -yy -v -T -ttt -q -f -i -o $strace_tmpfile "$@"
+lein run $strace_tmpfile
 
-pids: 0\$raw_trace@'!:'raw_trace?'" ";
-rest:  ((raw_trace?'" ") + 2) _' (raw_trace);
-
-start_times: rest@'!:'rest?'" ";
-rest:  ((rest?'" ") + 2) _' (rest);
-
-pcs: rest@'!:'rest?'"]";
-rest:  ((rest?'"]") + 2) _' (rest);
-
-calls: rest@'!:'rest?'"(";
-rest:  ((rest?'"(") + 1) _' (rest);
-
-rest: |:'rest; 
-
-runtimes:  |:'1_'rest@'!:'rest?'"<";
-rest:  ((rest?'"<") + 1) _' (rest);
-
-rets: 1_'|:'1_'rest@'!:'rest?'"=";
-rest:  ((rest?'"=") + 1) _' (rest);
-
-args:|:'2_'rest;
-
-trace: headers!(pids;start_times;runtimes;pcs;calls;args;rets);
-
-parsed_trace: raw_trace;
-EOF
-rlwrap k $k_tmpfile
 
