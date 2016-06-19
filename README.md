@@ -1,6 +1,6 @@
 # huh
 
-Let's use APL to analyze the system calls a program makes! 
+Let's use Postgres to analyze the system calls a program makes! 
 
 To get started do the following: 
 ```
@@ -10,6 +10,6 @@ vagrant up
 vagrant ssh
 cd /vagrant
 ./huh ls
-#raw_trace
+#Press up to go back in bash history to get table name
 ```
 

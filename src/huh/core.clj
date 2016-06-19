@@ -67,13 +67,19 @@
                  ")"))
    :pid identity
    :instruction stringer
+   :args (fn [& args] args)
    :call stringer
    :time (fn [& args] (str "to_timestamp(" (s/join "" args) ")"))
-   :call_args (fn [& args] (jsoner args))
+   :call_args (fn [args] (jsoner args))
    :return (fn [v & args]
              (if (empty? args)
                (str (jsoner v) ", null")
                (str (jsoner v) "," (s/join "," args))))
+   :array (fn [arg] arg)
+   :string (fn [& args] (apply str args))
+   :hex    (fn [& args] (apply str args))
+   :struct (fn [& kvs] (str "{" (s/join "," kvs) "}"))
+   :member (fn [k v] (str "\"" k "\":" v))
    :return_arg jsoner
    :return_msg stringer
    :return_flags jsoner
@@ -84,7 +90,7 @@
            (str "insert into " table-name " values ("
                 pid "," time ",null,'exited',null,null,null,null)"))
    })
-
+;;Someplace args is getting json wrapped twice
 
 (defn -main [strace-file table-name insert-file]
   (let [result (parse-strace (slurp strace-file))]

@@ -15,7 +15,7 @@ sudo -u postgres  PGOPTIONS='--client-min-messages=warning' psql -q huh -f huh.s
 sudo -u postgres psql -q huh -c "create table $table_name (like huh_base including all);" 
 LEIN_ROOT=1 lein run $strace_tmpfile $table_name $insert_tmpfile
 sudo -u postgres psql -q huh -f $insert_tmpfile 
-echo "select count(*) from $table_name;" | sudo dd of=/var/lib/postgresql/.psql_history  status=none
+echo "select * from $table_name;" | sudo dd of=/var/lib/postgresql/.psql_history status=none oflag=append conv=notrunc
 sudo -u postgres psql huh 
 
 
