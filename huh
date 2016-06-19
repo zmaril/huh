@@ -1,12 +1,21 @@
 #!/bin/bash
 set -e
-
+#set -x
 #TODO: compile strace with lib-unwind for stack traces at each system call
 
 strace_tmpfile=$(mktemp /tmp/huh.strace.XXXXXX)
-echo $strace_tmpfile
-#echo $db_tmpfile
+insert_tmpfile=$(mktemp /tmp/huh.strace.XXXXXX)
+table_name="huh_$(date +%s)"
+chmod 0777 $strace_tmpfile
+chmod 0777 $insert_tmpfile
+
 strace -x -y -yy -v -T -ttt -q -f -i -o $strace_tmpfile "$@"
-lein run $strace_tmpfile
+
+sudo -u postgres  PGOPTIONS='--client-min-messages=warning' psql -q huh -f huh.sql
+sudo -u postgres psql -q huh -c "create table $table_name (like huh_base including all);" 
+LEIN_ROOT=1 lein run $strace_tmpfile $table_name $insert_tmpfile
+sudo -u postgres psql -q huh -f $insert_tmpfile 
+echo "select count(*) from $table_name;" | sudo dd of=/var/lib/postgresql/.psql_history  status=none
+sudo -u postgres psql huh 
 
 

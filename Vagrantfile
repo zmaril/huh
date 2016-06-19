@@ -15,5 +15,7 @@ Vagrant.configure(2) do |config|
     echo "export PATH=\"$PATH:$HOME/bin\"" >> /home/vagrant/.bashrc
     sudo chmod +x /home/vagrant/bin/lein
     sudo apt-get install default-jdk -y
+    sudo -u postgres createuser huh -P huh_password
+    sudo -u postgres createdb huh -O huh
   SHELL
 end
